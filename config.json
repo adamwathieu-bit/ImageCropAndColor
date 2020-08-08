@@ -1,0 +1,9 @@
+{
+	"path_to_tiff_files": "/Users/adamwathieu/Desktop/Henri_Project/new_stuff",
+	"path_to_save_cropped_tiffs": "/Users/adamwathieu/Desktop/Henri_Project/new_stuff/dp10",
+	"path_to_save_csv": "/Users/adamwathieu/Desktop/Henri_Project/new_stuff/dp10",
+
+	"min_dist_between_circles": 3800,
+	"min_radius_of_circles": 1800,
+	"dp_index": 10
+}
