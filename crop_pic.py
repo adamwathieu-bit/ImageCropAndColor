@@ -3,7 +3,6 @@ import argparse
 import cv2
 from PIL import Image, ImageDraw
 import datetime
-import ntpath
 import csv
 import os
 import json
