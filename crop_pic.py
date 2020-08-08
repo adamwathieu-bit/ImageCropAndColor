@@ -16,9 +16,6 @@ TIFF_EXTENSIONS = (".tif", ".tiff", ".TIF", ".TIFF")
 CSV_FOLDER_NAME = "csv_report"
 CSV_FILENAME = "report.csv"
 
-CSV_COLUMN_NAMES = ['Original Image FileName', 'Cropped Image FileName', 'CenterX', 'CenterY', 'Radius', 'Pixels in [40,200]', 'Pixels', 'Pixel Ratio', 'time']
-
-
 
 # Description: creates and adds folder called folder_name to directory: working_directory,
 #			   returns path to folder
@@ -83,9 +80,10 @@ def find_circle(image_path, circle_width_buffer, hough_dp, min_dist, min_radius)
 		print("ERROR: No circles detected.")
 		return -1
 
-def find_total_pixels_within_range(image_path, color_range):
+def find_total_pixels_within_range(image_path, color_channels, color_range):
 	histSize_bin = 1
-	color = ('b','g','r')
+	color = tuple(color_channels)
+	# color = ('b','g','r')
 	newIm = cv2.imread(image_path, -1)
 
 	ret, mask = cv2.threshold(newIm[:, :, 3], 0, 255, cv2.THRESH_BINARY)
@@ -131,6 +129,12 @@ def main():
 	circle_min_radius = int(json_object[constants.CIRCLE_MIN_RADIUS])
 	hough_dp = int(json_object[constants.HOUGH_DP])
 
+	color_range = json_object[constants.COLOR_RANGE]
+	color_channels = json_object[constants.COLOR_CHANNELS]
+
+	CSV_COLUMN_NAMES = ['Original Image FileName', 'Cropped Image FileName', 'dp', 'Circle Border Buffer', 'CenterX', 'CenterY', 'Radius', 'Pixels in {}'.format(color_range), 'Pixels', 'Pixel Ratio', 'time']
+
+
 
 	# write header row to csv report file
 	with open(complete_csv_path, mode='w') as csvfileMod:
@@ -139,8 +143,7 @@ def main():
 
 
 
-	circle_width_buffer = 140 # offset for width of black circle
-	color_range = [40, 200]
+	circle_width_buffer = json_object[constants.CIRCLE_WIDTH_BUFFER] # offset for width of black circle
 	total_range = [0,256]
 	estimate = 0 # estimated seconds per job
 	first_tiff_file = True
@@ -170,13 +173,13 @@ def main():
 			cropped_image_obj = crop_circle(complete_file_path, [centerX, centerY], radius)
 			save_image_to_file(cropped_image_obj, complete_new_tiff_path)
 
-			select_pixels = find_total_pixels_within_range(complete_new_tiff_path, color_range)
-			total_pixels = find_total_pixels_within_range(complete_new_tiff_path, total_range)
+			select_pixels = find_total_pixels_within_range(complete_new_tiff_path, color_channels, color_range)
+			total_pixels = find_total_pixels_within_range(complete_new_tiff_path, color_channels, total_range)
 			end_time = datetime.datetime.now()
 
 			
 
-			row_contents = [complete_file_path, complete_new_tiff_path, centerX, centerY, radius, select_pixels, total_pixels, select_pixels/total_pixels, end_time - begin_time]
+			row_contents = [complete_file_path, complete_new_tiff_path, hough_dp, circle_width_buffer, centerX, centerY, radius, select_pixels, total_pixels, select_pixels/total_pixels, end_time - begin_time]
 			append_list_as_row(complete_csv_path, row_contents)
 
 			print("Finished: {}".format(file))
